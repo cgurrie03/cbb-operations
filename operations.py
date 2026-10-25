@@ -66,7 +66,7 @@ def next_due(t):
 
 def slot(t):
     local=t.astimezone(ET)
-    if local.date().isoformat()=='2026-11-01' and local.hour==22 and local.minute>=45:return '2026-11-01T22:45'
+    if local.date().isoformat()=='2026-11-01' and time(22,45)<=local.time()<time(23,45):return '2026-11-01T22:45'
     if local.hour in [9,12,15,18,21]:return local.strftime('%Y-%m-%dT%H:00')
     return None
 
@@ -133,6 +133,7 @@ def run(public_only=False,scheduled=False):
     dump(RUNTIME/'work/operations-health.json',health);checkpoint()
     stage='schedule'
     failed=False
+    previous_public={name:(PUBLIC/name).read_bytes() if (PUBLIC/name).exists() else None for name in FILES if name!='operations-health.json'}
     try:
         import prospective_run as pr,preseason_prepare as prep,odds_collector as odds,odds_history
         today=now().astimezone(ET).date();date=max(today.isoformat(),pr.OPENING)
@@ -196,6 +197,12 @@ def run(public_only=False,scheduled=False):
         health['lastSuccessAt']=stamp();health['lastCompletedSlot']=current_slot;health['status']='degraded' if failed else 'success'
     except Exception as error:
         failed=True;health.update(status='failed',errorStage=stage,errorType=type(error).__name__)
+        # A partial pipeline must not activate a new schedule with an old paper view.
+        for name,blob in previous_public.items():
+            if blob is not None:(PUBLIC/name).write_bytes(blob)
+            elif (PUBLIC/name).exists():(PUBLIC/name).unlink()
+        for field in ['scheduleObservedAt','scheduleRevision','scheduleGames','paperLastSuccessAt']:
+            health[field]=previous.get(field)
         # Never expose URLs, tokens, credentials or full exception text.
         print('Collection stage failed:',stage,type(error).__name__)
     try:publish(health)
