@@ -88,6 +88,9 @@ def canonical(events,source,membership,old):
             logos=t.get('logos',[]);logo=t.get('logo') or (logos[0].get('href') if logos else None)
             if logo:g[side+'Logo']=logo;g[side+'LogoSource']=logo
             g.setdefault(side+'Conference','UNVERIFIED')
+        g['hasD1Team']=bool(g['homeD1'] or g['awayD1'])
+        g['divisionVerified']=True
+        g.setdefault('availability','unverified')
         g.pop('odds',None);rows.append(g)
     return sorted(rows,key=lambda g:(g['tipoff'],g['id']))
 
@@ -188,6 +191,14 @@ def run(public_only=False,scheduled=False):
         pr.run(date)
         preparation=read(PUBLIC/'preseason-2027.json');preparation.update(collection='Hosted GitHub Actions collector; runs while this computer is offline',schedule_revision=revision)
         dump(PUBLIC/'preseason-2027.json',preparation)
+        # Publish existing immutable model outputs; never recompute or edit a forecast.
+        issued={ (r['game_id'],r['candidate'],r['issued_at']):r for p in (pr.PRIVATE/'forecasts').glob('*.json') for r in [read(p)] }
+        paper=read(PUBLIC/'paper-ledger-2027.json')
+        for row in paper['records']:
+            original=issued.get((row['game_id'],row['candidate'],row['issued_at']),{})
+            row['projected_margin']=original.get('projected_margin')
+            row['model_sha256']=original.get('model_sha256')
+        dump(PUBLIC/'paper-ledger-2027.json',paper)
         health['paperLastSuccessAt']=preparation['updated_at'];health['formalReviewDue']=preparation['formal_review_eligible'];health['collectionReviewDue']=preparation['collection_review_due']
         stage='rankings'
         import refresh_site_rankings
