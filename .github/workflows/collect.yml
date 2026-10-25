@@ -1,0 +1,58 @@
+name: CBB collection
+on:
+  schedule:
+    # Both DST offsets; the Eastern-time gate rejects the alternate hour.
+    - cron: '0 1,2,13,14,16,17,19,20,22,23 * * *'
+    - cron: '45 3 2 11 *'
+  workflow_dispatch:
+    inputs:
+      public_only:
+        description: Skip the paid odds request
+        type: boolean
+        default: true
+permissions:
+  contents: write
+concurrency:
+  group: cbb-authoritative-writer
+  cancel-in-progress: false
+jobs:
+  collect:
+    if: github.event_name == 'workflow_dispatch' || vars.CBB_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Eastern slot
+        id: gate
+        run: echo "due=$(python operations.py --gate)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
+        with:
+          ref: collector-state
+          path: state-checkout
+      - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
+        with:
+          repository: cgurrie03/cbb-public-data
+          ssh-key: ${{ secrets.PUBLIC_DATA_DEPLOY_KEY }}
+          path: public-checkout
+      - name: Install pinned runtime
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
+        run: pip install -r requirements.txt
+      - name: Collect, persist, publish and read back
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          EVENT: ${{ github.event_name }}
+          PUBLIC_ONLY: ${{ inputs.public_only }}
+        shell: bash
+        run: |
+          args=()
+          if [ "$EVENT" = schedule ]; then args+=(--scheduled); fi
+          if [ "$PUBLIC_ONLY" = true ]; then args+=(--public-only); fi
+          python operations.py "${args[@]}"
