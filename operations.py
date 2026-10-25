@@ -115,6 +115,9 @@ def publish(health):
         url=f'https://raw.githubusercontent.com/cgurrie03/cbb-public-data/{revision}/{name}'
         with urllib.request.urlopen(url,timeout=45) as r:remote=r.read()
         if hashlib.sha256(remote).digest()!=hashlib.sha256((PUBLIC/name).read_bytes()).digest():raise RuntimeError('Public readback mismatch')
+    # Switch one small pointer only after every file in this revision is readable.
+    dump(PUBLISHED/'current.json',{'revision':revision,'publishedAt':health['lastPublicationAt'],'files':FILES})
+    commit(PUBLISHED,'Activate verified data revision '+revision[:12])
     health['lastReadbackAt']=stamp();health['publicRevision']=revision
     dump(RUNTIME/'work/operations-health.json',health);checkpoint()
     print(json.dumps({'status':health['status'],'public_revision':revision,'readback':'verified'}))
