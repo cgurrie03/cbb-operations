@@ -105,7 +105,9 @@ def attach_cached_odds(data,cache,history):
 
 def publish(health):
     health['lastPublicationAt']=stamp();health['nextExpectedRunAt']=next_due(now())
-    dump(PUBLIC/'operations-health.json',health)
+    public_health={k:v for k,v in health.items() if k not in ['lastReadbackAt','publicRevision']}
+    public_health['readbackStatus']='Revision verified before activation'
+    dump(PUBLIC/'operations-health.json',public_health)
     for name in FILES:
         if (PUBLIC/name).exists():shutil.copyfile(PUBLIC/name,PUBLISHED/name)
     revision=commit(PUBLISHED,'Publish website data '+stamp())
