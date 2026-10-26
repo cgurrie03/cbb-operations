@@ -11,6 +11,8 @@
     "ppg": 13.3,
     "ppgSeason": 2026,
     "ppgSource": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/mens-college-basketball/athletes/4683769/overview?season=2026",
-    "official": false
+    "official": false,
+    "athleteId": "4683769",
+    "headshot": "https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/4683769.png"
   }
 ]

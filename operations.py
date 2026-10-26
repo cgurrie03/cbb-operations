@@ -103,6 +103,18 @@ def canonical(events,source,membership,old,conferences=None):
             records=competitor.get('records',[])
             record=next((r.get('summary') for r in records if r.get('type')=='total' or r.get('name','').lower()=='overall'),None)
             g[side+'Record']=record
+        notes=[v.get('headline','') for v in c.get('notes',[]) if v.get('headline')]
+        tournament=c.get('tournament') or e.get('tournament') or {}
+        if isinstance(tournament,str):tournament={'name':tournament}
+        g['eventLabel']=tournament.get('name') or (' · '.join(notes) if notes else None)
+        import re
+        round_value=tournament.get('round') or c.get('round')
+        if isinstance(round_value,dict):round_value=round_value.get('displayName') or round_value.get('name')
+        if not round_value and g['eventLabel']:
+            round_text=re.split(r'\s[-–:]\s',g['eventLabel'])[-1]
+            match=re.search(r'(?i)(first round|second round|round of \d+|quarterfinals?|semifinals?|third[- ]place(?: game)?|championship(?: game)?|final four|elite eight|sweet (?:16|sixteen))',round_text)
+            if match and ('championship' not in match.group(0).lower() or round_text!=g['eventLabel'] or round_text.lower() in ['championship','championship game']):round_value=match.group(0).title()
+        g['tournamentRound']=round_value
         venue=c.get('venue') or {}
         g['venue']=venue.get('fullName');g['city']=(venue.get('address') or {}).get('city');g['region']=(venue.get('address') or {}).get('state');g['designatedHome']=g['home']
         g['hasD1Team']=bool(g['homeD1'] or g['awayD1'])
