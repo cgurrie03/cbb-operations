@@ -17,11 +17,15 @@ class OperationsTest(unittest.TestCase):
         rows=canonical([event],{'observed_at':'2026-10-25T12:00:00Z','sha256':'new'},{'espn:1'},[{'id':'espn:42','tipoff':'2026-11-02T20:00:00Z','odds':{'stale':True}}])
         self.assertEqual(rows[0]['tipoff'],'2026-11-02T23:30:00Z');self.assertFalse(rows[0]['timeValid']);self.assertFalse(rows[0]['awayD1']);self.assertEqual(rows[0]['status'],'STATUS_POSTPONED');self.assertNotIn('odds',rows[0])
 
-    def test_quotes_require_confirmed_compatible_time(self):
+    def test_display_quotes_disclose_time_conflicts_and_swapped_designations(self):
         game={'home':'Home','away':'Away','tipoff':'2026-11-02T23:30:00Z','timeValid':True,'status':'STATUS_SCHEDULED'}
         cache={'collectedAt':'2026-10-25T12:00:00Z','events':[{'id':'q','home_team':'Home','away_team':'Away','commence_time':'2026-11-02T20:00:00Z'}]}
-        self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),0)
+        self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),1)
+        self.assertEqual(game['odds']['timingStatus'],'conflict')
         cache['events'][0]['commence_time']=game['tipoff'];self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),1)
+        cache['events'][0].update(home_team='Away',away_team='Home')
+        self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),1)
+        self.assertEqual(game['odds']['homeName'],'Home');self.assertTrue(game['odds']['designationReversed'])
         game['status']='STATUS_CANCELED';self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),0)
     def test_failed_readback_never_activates_partial_publication(self):
         import operations

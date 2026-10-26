@@ -88,6 +88,8 @@ def canonical(events,source,membership,old):
             logos=t.get('logos',[]);logo=t.get('logo') or (logos[0].get('href') if logos else None)
             if logo:g[side+'Logo']=logo;g[side+'LogoSource']=logo
             g.setdefault(side+'Conference','UNVERIFIED')
+        venue=c.get('venue') or {}
+        g['venue']=venue.get('fullName');g['city']=(venue.get('address') or {}).get('city');g['region']=(venue.get('address') or {}).get('state');g['designatedHome']=g['home']
         g['hasD1Team']=bool(g['homeD1'] or g['awayD1'])
         g['divisionVerified']=True
         g.setdefault('availability','unverified')
@@ -95,16 +97,28 @@ def canonical(events,source,membership,old):
     return sorted(rows,key=lambda g:(g['tipoff'],g['id']))
 
 def attach_cached_odds(data,cache,history):
+    """Display matching accepts swapped neutral-site designations, never fuzzy teams.
+    Timing conflicts are disclosed; forecast issuance still uses frozen matching.
+    """
     import re
     norm=lambda s:re.sub('[^a-z0-9]','',s.lower())
     matched=0
     for event in (cache or {}).get('events',[]):
-        candidates=[g for g in data['upcoming'] if g['timeValid'] and g['status'] not in ['STATUS_CANCELED','STATUS_CANCELLED','STATUS_POSTPONED'] and
-                    norm(g['home'])==norm(event['home_team']) and norm(g['away'])==norm(event['away_team']) and
-                    abs((datetime.fromisoformat(g['tipoff'].replace('Z','+00:00'))-datetime.fromisoformat(event['commence_time'].replace('Z','+00:00'))).total_seconds())<=300]
+        provider={norm(event['home_team']),norm(event['away_team'])}
+        candidates=[g for g in data['upcoming'] if g['status'] not in ['STATUS_CANCELED','STATUS_CANCELLED','STATUS_POSTPONED'] and
+                    {norm(g['home']),norm(g['away'])}==provider and
+                    abs((datetime.fromisoformat(g['tipoff'].replace('Z','+00:00'))-datetime.fromisoformat(event['commence_time'].replace('Z','+00:00'))).total_seconds())<=129600]
         if len(candidates)==1:
-            candidates[0]['odds']=dict(eventId=event['id'],collectedAt=cache['collectedAt'],bookmakers=event.get('bookmakers',[]),homeName=event['home_team'],awayName=event['away_team'],history=history(event['id']));matched+=1
+            g=candidates[0]
+            delta=abs((datetime.fromisoformat(g['tipoff'].replace('Z','+00:00'))-datetime.fromisoformat(event['commence_time'].replace('Z','+00:00'))).total_seconds())
+            g['odds']=dict(eventId=event['id'],collectedAt=cache['collectedAt'],bookmakers=event.get('bookmakers',[]),
+                homeName=next(n for n in [event['home_team'],event['away_team']] if norm(n)==norm(g['home'])),
+                awayName=next(n for n in [event['home_team'],event['away_team']] if norm(n)==norm(g['away'])),
+                providerTipoff=event['commence_time'],timingStatus='unconfirmed' if not g['timeValid'] else 'conflict' if delta>300 else 'aligned',
+                designationReversed=norm(g['home'])!=norm(event['home_team']),history=history(event['id']))
+            matched+=1
     return matched
+
 
 def publish(health):
     health['lastPublicationAt']=stamp();health['nextExpectedRunAt']=next_due(now())
@@ -141,10 +155,10 @@ def run(public_only=False,scheduled=False):
     previous_public={name:(PUBLIC/name).read_bytes() if (PUBLIC/name).exists() else None for name in FILES if name!='operations-health.json'}
     try:
         import prospective_run as pr,preseason_prepare as prep,odds_collector as odds,odds_history
-        today=now().astimezone(ET).date();date=max(today.isoformat(),pr.OPENING)
+        today=now().astimezone(ET).date();date=max(today.isoformat(),'2026-11-01')
         original_fetch=pr.fetch;schedules={};allrows=[];sources=[]
         data=read(PUBLIC/'data.json');members=prep.members()
-        for offset in range(7):
+        for offset in range(14):
             day=(datetime.fromisoformat(date).date()+timedelta(days=offset)).isoformat()
             url=prep.BASE+'scoreboard?dates='+day.replace('-','')+'&groups=50&limit=1000'
             body,source=original_fetch(url,'schedules')
@@ -166,7 +180,7 @@ def run(public_only=False,scheduled=False):
         pr.slate=slate
         revision=hashlib.sha256(json.dumps(sources,sort_keys=True).encode()).hexdigest()
         unique={g['id']:g for g in allrows};data['upcoming']=sorted(unique.values(),key=lambda g:(g['tipoff'],g['id']))
-        data['snapshotDate']=now().astimezone(ET).date().isoformat();data['scheduleFeed']={'observedAt':max(s['observed_at'] for s in sources),'revision':revision,'dateStart':date,'days':7,'games':len(unique)}
+        data['snapshotDate']=now().astimezone(ET).date().isoformat();data['scheduleFeed']={'observedAt':max(s['observed_at'] for s in sources),'revision':revision,'dateStart':date,'days':14,'games':len(unique)}
         dump(PUBLIC/'schedule.json',{'revision':revision,'sources':sources,'games':data['upcoming']});dump(PUBLIC/'data.json',data)
         health['scheduleObservedAt']=data['scheduleFeed']['observedAt'];health['scheduleRevision']=revision;health['scheduleGames']=len(unique)
         stage='odds'
@@ -175,6 +189,18 @@ def run(public_only=False,scheduled=False):
             original_write(path,value)
             if path.name=='usage.json':checkpoint()
         odds.write=durable_write;odds.load_key=lambda:os.environ['ODDS_API_KEY']
+        # Ten US operators cost the same one region-equivalent as the prior request.
+        # Keep the frozen quota reservation and request accounting intact.
+        from urllib.parse import urlsplit,urlunsplit,parse_qsl,urlencode
+        original_urlopen=odds.urlopen
+        def major_books(request,**kwargs):
+            parts=urlsplit(request.full_url);params=dict(parse_qsl(parts.query))
+            if parts.hostname=='api.the-odds-api.com' and parts.path.endswith('/odds/'):
+                params.pop('regions',None)
+                params['bookmakers']='draftkings,fanduel,betmgm,betrivers,williamhill_us,fanatics,hardrockbet,ballybet,betparx,espnbet'
+                request=urllib.request.Request(urlunsplit((parts.scheme,parts.netloc,parts.path,urlencode(params),parts.fragment)),headers=dict(request.header_items()))
+            return original_urlopen(request,**kwargs)
+        odds.urlopen=major_books
         reserve=today.isoformat()=='2026-11-01' and now().astimezone(ET).hour==21
         result={'status':'public_only_check' if public_only else 'opening_night_credit_reserved'} if public_only or reserve else odds.collect()
         health['oddsAttemptStatus']=result['status'];health['lastPaidAttemptAt']=read(odds.OUT/'usage.json',{'calls':[]})['calls'][-1:][0]['at'] if read(odds.OUT/'usage.json',{'calls':[]})['calls'] else None
@@ -185,7 +211,8 @@ def run(public_only=False,scheduled=False):
         if cache:
             data['oddsFeed']={k:v for k,v in cache.items() if k not in ['events','snapshotFile']}
             data['oddsFeed'].update(matchedGames=matched,status='failed' if failed else 'success',attemptStatus=result['status'],mode='five periodic snapshots/day')
-            health['oddsLastSuccessAt']=cache['collectedAt'];health['oddsEventCount']=cache['eventCount']
+            health['oddsLastSuccessAt']=cache['collectedAt'];health['oddsEventCount']=cache['eventCount'];health['oddsMatchedGames']=matched
+            data['oddsFeed']['requestedBookmakers']=['draftkings','fanduel','betmgm','betrivers','williamhill_us','fanatics','hardrockbet','ballybet','betparx','espnbet']
         dump(PUBLIC/'data.json',data)
         stage='paper'
         pr.run(date)
