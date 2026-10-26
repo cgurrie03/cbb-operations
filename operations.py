@@ -268,6 +268,9 @@ def run(public_only=False,scheduled=False):
         stage='team_context'
         from team_context import collect as collect_team_context
         latest_data=read(PUBLIC/'data.json');collect_team_context(latest_data,ROOT);dump(PUBLIC/'data.json',latest_data)
+        stage='display_rankings'
+        from display_rankings import collect as collect_display_rankings
+        latest_data=read(PUBLIC/'data.json');collect_display_rankings(latest_data,ROOT);dump(PUBLIC/'data.json',latest_data)
         stage='rankings'
         import refresh_site_rankings
         refresh_site_rankings.main()
