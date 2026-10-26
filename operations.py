@@ -70,7 +70,7 @@ def slot(t):
     if local.hour in [9,12,15,18,21]:return local.strftime('%Y-%m-%dT%H:00')
     return None
 
-def canonical(events,source,membership,old):
+def canonical(events,source,membership,old,conferences=None):
     """Display normalization only: stable IDs, explicit times and cancellation state."""
     rows=[];prior={g['id']:g for g in old}
     team_meta={}
@@ -97,7 +97,7 @@ def canonical(events,source,membership,old):
             if logo:g[side+'Logo']=logo;g[side+'LogoSource']=logo
             for field,value in team_meta.get(str(t['id']),{}).items():
                 if value is not None:g[side+field]=value
-            g.setdefault(side+'Conference','UNVERIFIED')
+            g[side+'Conference']=(conferences or {}).get(str(t.get('conferenceId')),g.get(side+'Conference','UNVERIFIED'))
         venue=c.get('venue') or {}
         g['venue']=venue.get('fullName');g['city']=(venue.get('address') or {}).get('city');g['region']=(venue.get('address') or {}).get('state');g['designatedHome']=g['home']
         g['hasD1Team']=bool(g['homeD1'] or g['awayD1'])
@@ -167,14 +167,20 @@ def run(public_only=False,scheduled=False):
         import prospective_run as pr,preseason_prepare as prep,odds_collector as odds,odds_history
         today=now().astimezone(ET).date();date=max(today.isoformat(),'2026-11-01')
         original_fetch=pr.fetch;schedules={};allrows=[];sources=[]
-        data=read(PUBLIC/'data.json');members=prep.members()
+        data=read(PUBLIC/'data.json');members=prep.members();conferences={}
+        try:
+            catalogue,_=original_fetch('https://site.api.espn.com/apis/site/v2/leagues/dropdown?lang=en&region=us&sport=basketball&league=mens-college-basketball','conferences')
+            for league in catalogue.get('leagues',[]):
+                for group in league.get('groups',[]):
+                    for conference in group.get('children',[]):conferences[str(conference['id'])]=conference.get('midsizeName',conference['name'])
+        except Exception:pass
         for offset in range(14):
             day=(datetime.fromisoformat(date).date()+timedelta(days=offset)).isoformat()
             url=prep.BASE+'scoreboard?dates='+day.replace('-','')+'&groups=50&limit=1000'
             body,source=original_fetch(url,'schedules')
             if 'events' not in body or len(body['events'])>=1000:raise RuntimeError('Invalid or truncated schedule')
             schedules[url]=(body,source);sources.append({k:v for k,v in source.items() if k!='path'})
-            allrows.extend(canonical(body['events'],source,members,data['upcoming']))
+            allrows.extend(canonical(body['events'],source,members,data['upcoming'],conferences))
         # Both the paper pipeline and main view consume exactly these observations.
         pr.fetch=lambda url,kind:schedules[url] if kind=='schedules' and url in schedules else original_fetch(url,kind)
         original_slate=pr.slate
