@@ -32,7 +32,7 @@ def collect(data,root,at=None,fetch=get):
     seeds=json.loads((root/'team-history.json').read_text());prior=data.get('teamContexts',{});teams={str(g[side+'TeamId']) for g in data['upcoming'] for side in ['away','home'] if g.get(side+'D1') and g.get(side+'TeamId')}
     def team(tid):
         prev=prior.get(tid,{});checked=prev.get('scheduleCheckedAt')
-        if checked and prev.get('current',{}).get('season')==season and 'upcoming' in prev and at-datetime.fromisoformat(checked)<timedelta(hours=3):return tid,prev
+        if checked and prev.get('current',{}).get('season')==season and prev.get('schema')==2 and 'upcoming' in prev and at-datetime.fromisoformat(checked)<timedelta(hours=3):return tid,prev
         current=[];upcoming=[];status='available'
         try:
             types=[2,3] if at.month in [3,4,5,6] else [2]
@@ -43,7 +43,7 @@ def collect(data,root,at=None,fetch=get):
                     competition=event.get('competitions',[{}])[0]
                     if competition.get('status',{}).get('type',{}).get('completed') or datetime.fromisoformat(event['date'].replace('Z','+00:00'))<at:continue
                     opponent=next((v for v in competition.get('competitors',[]) if str(v.get('id'))!=tid),None)
-                    if opponent:upcoming.append({'id':'espn:'+str(event['id']),'date':event['date'],'opponent':opponent.get('team',{}).get('displayName','Unknown'),'opponentId':str(opponent['id']),'logo':opponent.get('team',{}).get('logo'),'timeConfirmed':competition.get('timeValid') is True,'status':competition.get('status',{}).get('type',{}).get('description','Scheduled')})
+                    if opponent:upcoming.append({'id':'espn:'+str(event['id']),'date':event['date'],'opponent':opponent.get('team',{}).get('displayName','Unknown'),'opponentId':str(opponent['id']),'logo':opponent.get('team',{}).get('logo') or next((v.get('href') for v in opponent.get('team',{}).get('logos',[]) if v.get('href')),None),'timeConfirmed':competition.get('timeValid') is True,'status':competition.get('status',{}).get('type',{}).get('description','Scheduled')})
             current=list({g['id']:g for g in current}.values())
         except Exception:
             if prev:return tid,{**prev,'scheduleStatus':'delayed'}
@@ -58,7 +58,7 @@ def collect(data,root,at=None,fetch=get):
                 if history:
                     h=max(history,key=lambda h:h['observed_at']);edge=game['scored']-game['allowed']+h['point'];game.update(ats='W' if edge>0 else 'L' if edge<0 else 'P',spread=h['point'],book=h.get('book_name',h.get('book')))
         previous=summarize(seeds.get(tid,{}).get('games',[]),season-1)
-        return tid,{'upcoming':sorted(upcoming,key=lambda g:g['date'])[:5],'current':summarize(current,season),'atsGames':{g['id']:{k:g[k] for k in ['ats','spread','book']} for g in current if g.get('ats')},'previous':previous,'scheduleCheckedAt':stamp,'scheduleStatus':status,'source':BASE+f'teams/{tid}/schedule?season={season}&seasontype=2','previousSource':'ESPN normalized final-score archive; ATS uses provider-labelled closing lines only'}
+        return tid,{'schema':2,'upcoming':sorted(upcoming,key=lambda g:g['date'])[:5],'current':summarize(current,season),'atsGames':{g['id']:{k:g[k] for k in ['ats','spread','book']} for g in current if g.get('ats')},'previous':previous,'scheduleCheckedAt':stamp,'scheduleStatus':status,'source':BASE+f'teams/{tid}/schedule?season={season}&seasontype=2','previousSource':'ESPN normalized final-score archive; ATS uses provider-labelled closing lines only'}
     with ThreadPoolExecutor(max_workers=6) as pool:contexts=dict(pool.map(team,sorted(teams)))
     # Current ATS uses only saved pre-tip quotes, one latest observation per game/team.
     for tid,context in contexts.items():
