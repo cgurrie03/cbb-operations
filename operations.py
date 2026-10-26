@@ -98,6 +98,11 @@ def canonical(events,source,membership,old,conferences=None):
             for field,value in team_meta.get(str(t['id']),{}).items():
                 if value is not None:g[side+field]=value
             g[side+'Conference']=(conferences or {}).get(str(t.get('conferenceId')),g.get(side+'Conference','UNVERIFIED'))
+        for side in ['home','away']:
+            competitor=next(v for v in c['competitors'] if v['homeAway']==side)
+            records=competitor.get('records',[])
+            record=next((r.get('summary') for r in records if r.get('type')=='total' or r.get('name','').lower()=='overall'),None)
+            g[side+'Record']=record
         venue=c.get('venue') or {}
         g['venue']=venue.get('fullName');g['city']=(venue.get('address') or {}).get('city');g['region']=(venue.get('address') or {}).get('state');g['designatedHome']=g['home']
         g['hasD1Team']=bool(g['homeD1'] or g['awayD1'])
@@ -233,6 +238,8 @@ def run(public_only=False,scheduled=False):
         stage='paper'
         pr.run(date)
         preparation=read(PUBLIC/'preseason-2027.json');preparation.update(collection='Hosted GitHub Actions collector; runs while this computer is offline',schedule_revision=revision)
+        from model_extensions import publish_previews
+        preparation=publish_previews(pr,data,preparation,ROOT/'totals-model.json')
         dump(PUBLIC/'preseason-2027.json',preparation)
         # Publish existing immutable model outputs; never recompute or edit a forecast.
         issued={ (r['game_id'],r['candidate'],r['issued_at']):r for p in (pr.PRIVATE/'forecasts').glob('*.json') for r in [read(p)] }
@@ -243,6 +250,9 @@ def run(public_only=False,scheduled=False):
             row['model_sha256']=original.get('model_sha256')
         dump(PUBLIC/'paper-ledger-2027.json',paper)
         health['paperLastSuccessAt']=preparation['updated_at'];health['formalReviewDue']=preparation['formal_review_eligible'];health['collectionReviewDue']=preparation['collection_review_due']
+        stage='public_betting'
+        from public_betting import collect as collect_public_betting
+        latest_data=read(PUBLIC/'data.json');latest_data['publicBettingFeed']=collect_public_betting();dump(PUBLIC/'data.json',latest_data)
         stage='rankings'
         import refresh_site_rankings
         refresh_site_rankings.main()

@@ -1,0 +1,163 @@
+{
+  "version": "cbb-totals-v1-20261026",
+  "target": "combined final points including overtime",
+  "features": [
+    "eff_total",
+    "expected_pace",
+    "venue_effect"
+  ],
+  "selected": "ridge",
+  "fit_through": 2026,
+  "validation": "retrospective expanding-season walk-forward",
+  "folds": [
+    {
+      "season": 2023,
+      "candidate": "training_mean",
+      "games": 5715,
+      "mae": 14.84937474819227,
+      "rmse": 18.630379742747564,
+      "bias": 1.7421977625773242
+    },
+    {
+      "season": 2023,
+      "candidate": "raw_efficiency",
+      "games": 5715,
+      "mae": 13.16821430548862,
+      "rmse": 16.672778037062532,
+      "bias": -1.5204755647694412
+    },
+    {
+      "season": 2023,
+      "candidate": "ridge",
+      "games": 5715,
+      "mae": 13.10064801951397,
+      "rmse": 16.57872489540461,
+      "bias": -1.0504183339637192
+    },
+    {
+      "season": 2024,
+      "candidate": "training_mean",
+      "games": 5726,
+      "mae": 14.699774324212113,
+      "rmse": 18.692531280032686,
+      "bias": -2.291594752005501
+    },
+    {
+      "season": 2024,
+      "candidate": "raw_efficiency",
+      "games": 5726,
+      "mae": 13.234448286839305,
+      "rmse": 16.881730108635153,
+      "bias": -1.403551200920187
+    },
+    {
+      "season": 2024,
+      "candidate": "ridge",
+      "games": 5726,
+      "mae": 13.159822901295064,
+      "rmse": 16.786462249815894,
+      "bias": -1.1104371367893422
+    },
+    {
+      "season": 2025,
+      "candidate": "training_mean",
+      "games": 5764,
+      "mae": 14.555644477482986,
+      "rmse": 18.615724692655828,
+      "bias": -2.417040930576166
+    },
+    {
+      "season": 2025,
+      "candidate": "raw_efficiency",
+      "games": 5764,
+      "mae": 13.046110340253582,
+      "rmse": 16.720781594281352,
+      "bias": -1.0688863412273988
+    },
+    {
+      "season": 2025,
+      "candidate": "ridge",
+      "games": 5764,
+      "mae": 13.001778911050112,
+      "rmse": 16.6697112335947,
+      "bias": -1.0331481660047588
+    },
+    {
+      "season": 2026,
+      "candidate": "training_mean",
+      "games": 5752,
+      "mae": 15.903759620716716,
+      "rmse": 20.146730869529563,
+      "bias": -5.942445154855698
+    },
+    {
+      "season": 2026,
+      "candidate": "raw_efficiency",
+      "games": 5752,
+      "mae": 13.86947869844738,
+      "rmse": 17.528379467962566,
+      "bias": -0.9448697381738784
+    },
+    {
+      "season": 2026,
+      "candidate": "ridge",
+      "games": 5752,
+      "mae": 13.75944824529273,
+      "rmse": 17.418012514663964,
+      "bias": -1.0282514770872033
+    }
+  ],
+  "pooled": {
+    "raw_efficiency": {
+      "mae": 13.329782511695793,
+      "rmse": 16.95478322662871,
+      "bias": -1.2337066530442666
+    },
+    "ridge": {
+      "mae": 13.255649663046327,
+      "rmse": 16.866878030019553,
+      "bias": -1.0554982074711616
+    },
+    "training_mean": {
+      "mae": 15.002493556341499,
+      "rmse": 19.033264712821577,
+      "bias": -2.233644630893631
+    }
+  },
+  "seasons_beating_both_baselines": 4,
+  "experimental": true,
+  "limitations": [
+    "Original source publication/revision times incompletely reconstructed",
+    "Prior project research inspected these historical seasons",
+    "Point forecast only; no Over/Under probability or validated betting return"
+  ],
+  "source_hashes": {
+    "blind-replay-20261014\\train-24.parquet": "37599246c30374804fe0d2a10bbb9c7abb1b62b3126d385ef8803a5242cb47bf",
+    "blind-replay-20261014\\pregame-24.parquet": "14d3e20c340340a98b4bb50cef3573acf1809262d933406decc63c0706595eb7",
+    "spread-v3-20261017\\features-2026.parquet": "e2c4ac8da898fbfe5f1e49e735fb8ee54a6e75888155669b6c732ce70871f7d3"
+  },
+  "leakage_checks": {
+    "unique_keys": true,
+    "cutoff_invariants": true,
+    "prior_season_fit": true,
+    "training_only_scaler": true,
+    "heldout_target_poison": true,
+    "verdict": "REVIEW REQUIRED for original source publication/revision provenance; no same-game or future-result feature use found"
+  },
+  "mean": [
+    143.02071749305725,
+    69.58699662504435,
+    0.8798716491744101
+  ],
+  "scale": [
+    8.863564632808561,
+    2.9966789819322,
+    0.3251115657024738
+  ],
+  "coef": [
+    7.4002474740524455,
+    1.9521533844449441,
+    0.6091651808003282
+  ],
+  "intercept": 144.06325623370546
+}
