@@ -1,0 +1,16 @@
+[
+  {
+    "teamId": "222",
+    "name": "Kwame Evans Jr.",
+    "position": "F",
+    "status": "Uncertain",
+    "reportedAt": "2026-10-23T13:01:00+00:00",
+    "expiresAt": "2026-10-30T13:01:00+00:00",
+    "source": "https://www.inquirer.com/college-sports/villanova/villanova-virginia-exhibition-kevin-willard-luigi-suigo-kwame-evans-injury-update-20261023.html",
+    "sourceName": "Philadelphia Inquirer",
+    "ppg": 13.3,
+    "ppgSeason": 2026,
+    "ppgSource": "https://site.web.api.espn.com/apis/common/v3/sports/basketball/mens-college-basketball/athletes/4683769/overview?season=2026",
+    "official": false
+  }
+]

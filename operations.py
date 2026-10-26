@@ -253,6 +253,9 @@ def run(public_only=False,scheduled=False):
         stage='public_betting'
         from public_betting import collect as collect_public_betting
         latest_data=read(PUBLIC/'data.json');latest_data['publicBettingFeed']=collect_public_betting();dump(PUBLIC/'data.json',latest_data)
+        stage='team_context'
+        from team_context import collect as collect_team_context
+        latest_data=read(PUBLIC/'data.json');collect_team_context(latest_data,ROOT);dump(PUBLIC/'data.json',latest_data)
         stage='rankings'
         import refresh_site_rankings
         refresh_site_rankings.main()

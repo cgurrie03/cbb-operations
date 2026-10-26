@@ -1,0 +1,91 @@
+{
+  "version": "outcome-ranges-v1-20261026",
+  "nominal_coverage": 0.8,
+  "experimental": true,
+  "definition": "Central empirical outcome range; actual minus unchanged point prediction",
+  "markets": {
+    "spreads": {
+      "mae": 9.210734696537635,
+      "rmse": 11.721820877232425,
+      "low_residual": -13.409030610527392,
+      "high_residual": 15.716039447803583,
+      "calibration_games": 22957,
+      "fit_through": 2026,
+      "validation": [
+        {
+          "season": 2024,
+          "calibration_games": 5715,
+          "games": 5726,
+          "coverage": 0.7914774711840726,
+          "width": 28.792776026277693,
+          "low_residual": -13.109875313842556,
+          "high_residual": 15.682900712435135
+        },
+        {
+          "season": 2025,
+          "calibration_games": 11441,
+          "games": 5764,
+          "coverage": 0.8015267175572519,
+          "width": 29.083532407877975,
+          "low_residual": -13.489964110683854,
+          "high_residual": 15.59356829719412
+        },
+        {
+          "season": 2026,
+          "calibration_games": 17205,
+          "games": 5752,
+          "coverage": 0.7941585535465925,
+          "width": 29.00866056111324,
+          "low_residual": -13.32095399408013,
+          "high_residual": 15.687706567033107
+        }
+      ],
+      "coverage": 0.7957313536712678,
+      "evaluation_games": 17242
+    },
+    "totals": {
+      "mae": 13.255649663046327,
+      "rmse": 16.866878030019553,
+      "low_residual": -20.009814716770997,
+      "high_residual": 22.62701410111314,
+      "calibration_games": 22957,
+      "fit_through": 2026,
+      "validation": [
+        {
+          "season": 2024,
+          "calibration_games": 5715,
+          "games": 5726,
+          "coverage": 0.798812434509256,
+          "width": 41.99148256840043,
+          "low_residual": -19.510107315395107,
+          "high_residual": 22.48137525300532
+        },
+        {
+          "season": 2025,
+          "calibration_games": 11441,
+          "games": 5764,
+          "coverage": 0.7994448299791811,
+          "width": 42.00465954469078,
+          "low_residual": -19.59003066334253,
+          "high_residual": 22.41462888134825
+        },
+        {
+          "season": 2026,
+          "calibration_games": 17205,
+          "games": 5752,
+          "coverage": 0.7757301808066759,
+          "width": 42.03280265302327,
+          "low_residual": -19.75401754885912,
+          "high_residual": 22.27878510416415
+        }
+      ],
+      "coverage": 0.7913235123535552,
+      "evaluation_games": 17242
+    }
+  },
+  "limitations": [
+    "Retrospective previously inspected seasons",
+    "Original source publication/revision timing unresolved",
+    "Not individual calibrated confidence or betting probability"
+  ]
+}

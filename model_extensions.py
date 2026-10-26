@@ -27,6 +27,8 @@ def publish_previews(pr,data,preparation,artifact_path):
             projected_total=total_prediction(artifact,row),total_model_version=artifact['version'],total_model_sha256=digest,
             features_observed_at=cutoff.isoformat(),availability_verified=False,paper_status='research preview; issued records remain separate'))
     preparation['previews']=previews
+    ranges_path=artifact_path.with_name('outcome-ranges.json')
+    if ranges_path.exists():preparation['outcome_ranges']=json.loads(ranges_path.read_text())
     preparation['preview_scope']='All published future eligible D1-vs-D1 games, using only information available at publication'
     preparation['totals_model']={k:artifact[k] for k in ['version','fit_through','experimental','validation','pooled','limitations']}
     preparation['totals_model']['sha256']=digest
