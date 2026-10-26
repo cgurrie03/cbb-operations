@@ -73,6 +73,14 @@ def slot(t):
 def canonical(events,source,membership,old):
     """Display normalization only: stable IDs, explicit times and cancellation state."""
     rows=[];prior={g['id']:g for g in old}
+    team_meta={}
+    for game in old:
+        for side in ['home','away']:
+            if game.get(side+'TeamId'):
+                entry=team_meta.setdefault(game[side+'TeamId'],{})
+                for field in ['Conference','Rank','RankDate','RankSource']:
+                    value=game.get(side+field)
+                    if value is not None and value!='UNVERIFIED':entry[field]=value
     for e in events:
         if e.get('season',{}).get('year')!=2027 or e.get('season',{}).get('type') not in [2,3]:continue
         c=e['competitions'][0];teams={v['homeAway']:v['team'] for v in c['competitors']}
@@ -87,6 +95,8 @@ def canonical(events,source,membership,old):
             g[side+'D1']='espn:'+str(t['id']) in membership
             logos=t.get('logos',[]);logo=t.get('logo') or (logos[0].get('href') if logos else None)
             if logo:g[side+'Logo']=logo;g[side+'LogoSource']=logo
+            for field,value in team_meta.get(str(t['id']),{}).items():
+                if value is not None:g[side+field]=value
             g.setdefault(side+'Conference','UNVERIFIED')
         venue=c.get('venue') or {}
         g['venue']=venue.get('fullName');g['city']=(venue.get('address') or {}).get('city');g['region']=(venue.get('address') or {}).get('state');g['designatedHome']=g['home']
@@ -212,7 +222,7 @@ def run(public_only=False,scheduled=False):
             data['oddsFeed']={k:v for k,v in cache.items() if k not in ['events','snapshotFile']}
             data['oddsFeed'].update(matchedGames=matched,status='failed' if failed else 'success',attemptStatus=result['status'],mode='five periodic snapshots/day')
             health['oddsLastSuccessAt']=cache['collectedAt'];health['oddsEventCount']=cache['eventCount'];health['oddsMatchedGames']=matched
-            data['oddsFeed']['requestedBookmakers']=['draftkings','fanduel','betmgm','betrivers','williamhill_us','fanatics','hardrockbet','ballybet','betparx','espnbet']
+            data['oddsFeed']['configuredBookmakers']=['draftkings','fanduel','betmgm','betrivers','williamhill_us','fanatics','hardrockbet','ballybet','betparx','espnbet']
         dump(PUBLIC/'data.json',data)
         stage='paper'
         pr.run(date)
