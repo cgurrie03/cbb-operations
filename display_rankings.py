@@ -8,11 +8,16 @@ def normalize(s):
     s=re.sub(r'\bstate\b','st',s);s=re.sub(r'\bsaint\b','st',s)
     return re.sub('[^a-z0-9]','',s)
 def get(url):
-    with urllib.request.urlopen(url,timeout=20) as r:return json.load(r)
+    with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'CBBResearchDashboard/1.0 (+https://cbb.coopergurrie.com/)'}),timeout=20) as r:return json.load(r)
 def collect(data,root,at=None,fetch=get):
     at=at or datetime.now(timezone.utc);data.setdefault('externalRankings',{})['kenpom']={'mode':'links','teams':json.loads((Path(root)/'kenpom-team-links.json').read_text(encoding='utf8'))};season=max(g['season'] for g in data['upcoming']);prior=data.get('externalRankings',{}).get('torvik',{});url=f'https://barttorvik.com/{season}_team_results.json'
+    seeded=False
+    seed_path=Path(root)/'torvik-seed.json'
+    if not prior.get('teams') and seed_path.exists():
+        seed=json.loads(seed_path.read_text(encoding='utf8'))
+        if seed.get('season')==season and at-datetime.fromisoformat(seed['checkedAt'])<timedelta(days=2):prior=seed;seeded=True
     try:
-        if prior.get('season')==season and prior.get('checkedAt') and at-datetime.fromisoformat(prior['checkedAt'])<timedelta(hours=6):return data
+        if not seeded and prior.get('season')==season and prior.get('checkedAt') and at-datetime.fromisoformat(prior['checkedAt'])<timedelta(hours=6):return data
         rows=fetch(url)
         if not isinstance(rows,list) or len(rows)<300:raise ValueError('Incomplete ranking feed')
         names={};ranks=set()
@@ -31,7 +36,7 @@ def collect(data,root,at=None,fetch=get):
                 used.add(rank);mapped[tid]={'rank':rank,'sourceName':source_name,'url':'https://barttorvik.com/team.php?'+urllib.parse.urlencode({'team':source_name,'year':season})}
         if len(mapped)<300:raise ValueError('Insufficient matched coverage')
         data.setdefault('externalRankings',{})['torvik']={'status':'available','season':season,'checkedAt':at.isoformat(),'source':url,'teams':mapped}
-    except Exception:
-        data.setdefault('externalRankings',{})['torvik']={**prior,'status':'delayed' if prior.get('teams') and prior.get('season')==season else 'unavailable','season':season,'source':url}
+    except Exception as error:
+        data.setdefault('externalRankings',{})['torvik']={**prior,'errorType':type(error).__name__,'errorCode':getattr(error,'code',None),'status':'delayed' if prior.get('teams') and prior.get('season')==season else 'unavailable','season':season,'source':url}
         if prior.get('season')!=season:data['externalRankings']['torvik']['teams']={}
     return data
