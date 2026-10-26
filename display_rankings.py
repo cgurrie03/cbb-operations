@@ -10,7 +10,7 @@ def normalize(s):
 def get(url):
     with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'CBBResearchDashboard/1.0 (+https://cbb.coopergurrie.com/)'}),timeout=20) as r:return json.load(r)
 def collect(data,root,at=None,fetch=get):
-    at=at or datetime.now(timezone.utc);data.setdefault('externalRankings',{})['kenpom']={'mode':'links','teams':json.loads((Path(root)/'kenpom-team-links.json').read_text(encoding='utf8'))};season=max(g['season'] for g in data['upcoming']);prior=data.get('externalRankings',{}).get('torvik',{});url=f'https://barttorvik.com/{season}_team_results.json'
+    at=at or datetime.now(timezone.utc);season=max(g['season'] for g in data['upcoming']);prior=data.get('externalRankings',{}).get('torvik',{});url=f'https://barttorvik.com/{season}_team_results.json'
     seeded=False
     seed_path=Path(root)/'torvik-seed.json'
     if not prior.get('teams') and seed_path.exists():
