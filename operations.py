@@ -293,6 +293,10 @@ def run(public_only=False,scheduled=False):
             'maximumAttemptsPerDay':5,'maximumRollingCredits':500,'lastOutcome':result['status']}
         health['lastSuccessAt']=stamp();health['lastCompletedSlot']=current_slot;health['status']='degraded' if failed else 'success'
     except Exception as error:
+        import traceback
+        frames=traceback.extract_tb(error.__traceback__)
+        safe_frames=' > '.join(f'{Path(f.filename).name}:{f.lineno} ({f.name})' for f in frames)
+        print(f'::error::Collection {stage}: {type(error).__name__}; {safe_frames}')
         failed=True;health.update(status='failed',errorStage=stage,errorType=type(error).__name__)
         # A partial pipeline must not activate a new schedule with an old paper view.
         for name,blob in previous_public.items():
