@@ -17,7 +17,7 @@ def publish_previews(pr,data,preparation,artifact_path):
         if len(frame):frames.append(frame)
     if not frames:return preparation
     frame=pd.concat(frames,ignore_index=True);cutoff=pd.Timestamp(pr.now())
-    frame=frame[frame.eligible&frame.tipoff.gt(cutoff)&frame.decision_time.ge(cutoff)].drop_duplicates('game_id').copy()
+    frame=frame[frame.eligible&frame.tipoff.gt(cutoff)].drop_duplicates('game_id').copy()
     if frame.empty:return preparation
     x=pr.feature_rows(frame,cutoff);by_id=frame.set_index('game_id');previews=[]
     for row in x.to_dict('records'):

@@ -30,6 +30,10 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
+      - uses: actions/setup-node@v4
+        if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
+        with:
+          node-version: '22'
       - uses: actions/checkout@v4
         if: github.event_name == 'workflow_dispatch' || steps.gate.outputs.due == 'true'
         with:

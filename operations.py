@@ -100,6 +100,11 @@ def canonical(events,source,membership,old,conferences=None):
             g[side+'Conference']=(conferences or {}).get(str(t.get('conferenceId')),g.get(side+'Conference','UNVERIFIED'))
         for side in ['home','away']:
             competitor=next(v for v in c['competitors'] if v['homeAway']==side)
+            score=competitor.get('score')
+            if isinstance(score,dict):score=score.get('value')
+            try:score=float(score)
+            except (TypeError,ValueError):score=None
+            g[side+'Score']=int(score) if score is not None and score>=0 and score.is_integer() else None
             records=competitor.get('records',[])
             record=next((r.get('summary') for r in records if r.get('type')=='total' or r.get('name','').lower()=='overall'),None)
             g[side+'Record']=record
@@ -191,8 +196,10 @@ def run(public_only=False,scheduled=False):
                 for group in league.get('groups',[]):
                     for conference in group.get('children',[]):conferences[str(conference['id'])]=conference.get('midsizeName',conference['name'])
         except Exception:pass
-        for offset in range(14):
-            day=(datetime.fromisoformat(date).date()+timedelta(days=offset)).isoformat()
+        days={(datetime.fromisoformat(date).date()+timedelta(days=offset)).isoformat() for offset in range(-1,14)}
+        # Keep checking unresolved past games, including delayed/postponed finals.
+        days.update(g['day'] for g in data['upcoming'] if g['day']<date and (not g.get('completed') or g.get('homeScore') is None or g.get('awayScore') is None))
+        for day in sorted(days):
             url=prep.BASE+'scoreboard?dates='+day.replace('-','')+'&groups=50&limit=1000'
             body,source=original_fetch(url,'schedules')
             if 'events' not in body or len(body['events'])>=1000:raise RuntimeError('Invalid or truncated schedule')
@@ -212,7 +219,8 @@ def run(public_only=False,scheduled=False):
             return frame,source
         pr.slate=slate
         revision=hashlib.sha256(json.dumps(sources,sort_keys=True).encode()).hexdigest()
-        unique={g['id']:g for g in allrows};data['upcoming']=sorted(unique.values(),key=lambda g:(g['tipoff'],g['id']))
+        unique={g['id']:g for g in data['upcoming'] if g['day']<date}
+        unique.update({g['id']:g for g in allrows});data['upcoming']=sorted(unique.values(),key=lambda g:(g['tipoff'],g['id']))
         data['snapshotDate']=now().astimezone(ET).date().isoformat();data['scheduleFeed']={'observedAt':max(s['observed_at'] for s in sources),'revision':revision,'dateStart':date,'days':14,'games':len(unique)}
         dump(PUBLIC/'schedule.json',{'revision':revision,'sources':sources,'games':data['upcoming']});dump(PUBLIC/'data.json',data)
         health['scheduleObservedAt']=data['scheduleFeed']['observedAt'];health['scheduleRevision']=revision;health['scheduleGames']=len(unique)
@@ -261,6 +269,10 @@ def run(public_only=False,scheduled=False):
             row['projected_margin']=original.get('projected_margin')
             row['model_sha256']=original.get('model_sha256')
         dump(PUBLIC/'paper-ledger-2027.json',paper)
+        from recommendation_history import update as update_recommendations
+        latest_data=read(PUBLIC/'data.json')
+        update_recommendations(latest_data,preparation,paper,RUNTIME/'work/recommendation-history.json',stamp(),revision)
+        dump(PUBLIC/'data.json',latest_data)
         health['paperLastSuccessAt']=preparation['updated_at'];health['formalReviewDue']=preparation['formal_review_eligible'];health['collectionReviewDue']=preparation['collection_review_due']
         stage='public_betting'
         from public_betting import collect as collect_public_betting
