@@ -280,6 +280,12 @@ def run(public_only=False,scheduled=False):
             row['projected_margin']=original.get('projected_margin')
             row['model_sha256']=original.get('model_sha256')
         dump(PUBLIC/'paper-ledger-2027.json',paper)
+        stage='three_models'
+        from three_models import publish as publish_three_models
+        latest_data=read(PUBLIC/'data.json')
+        publish_three_models(pr,latest_data,ROOT,RUNTIME/'work/three-models',stamp())
+        dump(PUBLIC/'data.json',latest_data)
+        stage='recommendations'
         from recommendation_history import update as update_recommendations
         latest_data=read(PUBLIC/'data.json')
         update_recommendations(latest_data,preparation,paper,RUNTIME/'work/recommendation-history.json',stamp(),revision)

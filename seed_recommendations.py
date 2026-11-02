@@ -7,7 +7,7 @@ commits=git('log','--reverse','--format=%H','--since=2026-10-26','--','data.json
 for sha in commits:
  try:
   data=json.loads(git('show',sha+':data.json'));prep=json.loads(git('show',sha+':preseason-2027.json'));paper=json.loads(git('show',sha+':paper-ledger-2027.json'));health=json.loads(git('show',sha+':operations-health.json'))
-  capture(data,prep,paper,health['lastPublicationAt'],sha,history)
+  capture(data,prep,paper,health['lastPublicationAt'],sha,history,selector='legacy-recommendations')
  except (KeyError,subprocess.CalledProcessError):continue
 Path('recommendation-seed.json').write_text(json.dumps(history,separators=(',',':')),encoding='utf8')
 print('Recovered original snapshots:',len(commits),'games:',len(history),'games with picks:',sum(bool(g['markets']) for g in history.values()))

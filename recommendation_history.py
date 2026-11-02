@@ -3,15 +3,15 @@ import json,subprocess
 from pathlib import Path
 from datetime import datetime
 
-def capture(data,preparation,paper,at,revision,history):
+def capture(data,preparation,paper,at,revision,history,selector='recommendations'):
     payload=dict(data=data,preparation=preparation,paper=paper,at=at,sourceRevision=revision)
-    result=subprocess.run(['node',str(Path(__file__).parent/'recommendations/capture.mjs')],input=json.dumps(payload),text=True,capture_output=True,check=True)
+    result=subprocess.run(['node',str(Path(__file__).parent/selector/'capture.mjs')],input=json.dumps(payload),text=True,capture_output=True,check=True)
     for record in json.loads(result.stdout):
         existing=history.setdefault(record['gameId'],{})
         # A changed matchup or start time must not inherit a different game's pick.
         if existing and any(existing.get(k)!=record.get(k) for k in ['homeTeamId','awayTeamId','tipoff']):existing.clear()
         if existing.get('capturedAt','')>record['capturedAt']:continue
-        previous=existing.get('markets',{})
+        previous=existing.get('markets',{}) if existing.get('recommendationPolicy')==record.get('recommendationPolicy') and (existing.get('modelComparison') or {}).get('version')==(record.get('modelComparison') or {}).get('version') else {}
         existing.update({k:v for k,v in record.items() if k!='picks'})
         existing['markets']=previous
         for market,pick in record['picks'].items():
