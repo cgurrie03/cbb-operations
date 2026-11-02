@@ -1,8 +1,13 @@
 import unittest
-from operations import canonical
+from operations import canonical,normalize_unpriced_metadata
 from recommendation_history import capture,attach
 
 class ResultsTest(unittest.TestCase):
+    def test_unmatched_book_nan_is_unpriced_without_changing_forecast(self):
+        r={'bookmaker':float('nan'),'home_cover_probability':None,'projected_margin':4.5,'features':{'x':1}}
+        fixed=normalize_unpriced_metadata(r)
+        self.assertEqual(fixed['bookmaker'],'unpriced');self.assertEqual(fixed['projected_margin'],4.5);self.assertEqual(fixed['features'],r['features'])
+        priced={**r,'home_cover_probability':.6};self.assertIs(normalize_unpriced_metadata(priced),priced)
     def test_score_is_saved_only_from_source(self):
         e={'id':'42','date':'2026-11-01T14:30Z','season':{'year':2027,'type':2},'competitions':[{'timeValid':True,'status':{'type':{'name':'STATUS_FINAL','completed':True}},'competitors':[{'homeAway':'home','score':'75','team':{'id':'1','displayName':'Home'}},{'homeAway':'away','score':'70','team':{'id':'2','displayName':'Away'}}]}]}
         g=canonical([e],{'observed_at':'2026-11-02T12:00Z','sha256':'a'},{'espn:1','espn:2'},[])[0]

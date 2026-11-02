@@ -15,6 +15,15 @@ FILES=['data.json','preseason-2027.json','paper-ledger-2027.json','schedule.json
 
 def now():return datetime.now(timezone.utc)
 def stamp():return now().isoformat()
+def normalize_unpriced_metadata(record):
+    # A left join with a partly priced slate uses NaN for the unmatched book.
+    # Only repair missing display metadata; numerical model inputs stay validated.
+    import math
+    if record.get('home_cover_probability') is None:
+        book=record.get('bookmaker')
+        if book is None or isinstance(book,float) and not math.isfinite(book):
+            record={**record,'bookmaker':'unpriced'}
+    return record
 def dump(p,d):
     p.parent.mkdir(parents=True,exist_ok=True)
     p.write_text(json.dumps(d,separators=(',',':'),allow_nan=False),encoding='utf8')
@@ -256,6 +265,8 @@ def run(public_only=False,scheduled=False):
             data['oddsFeed']['configuredBookmakers']=['draftkings','fanduel','betmgm','betrivers','williamhill_us','fanatics','hardrockbet','ballybet','betparx','espnbet']
         dump(PUBLIC/'data.json',data)
         stage='paper'
+        original_save=pr.save
+        pr.save=lambda record,*args,**kwargs:original_save(normalize_unpriced_metadata(record),*args,**kwargs)
         pr.run(date)
         preparation=read(PUBLIC/'preseason-2027.json');preparation.update(collection='Hosted GitHub Actions collector; runs while this computer is offline',schedule_revision=revision)
         from model_extensions import publish_previews
