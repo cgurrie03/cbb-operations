@@ -76,7 +76,9 @@ def next_due(t):
 def slot(t):
     local=t.astimezone(ET)
     if local.date().isoformat()=='2026-11-01' and time(22,45)<=local.time()<time(23,45):return '2026-11-01T22:45'
-    if local.hour in [9,12,15,18,21]:return local.strftime('%Y-%m-%dT%H:00')
+    for hour in [9,12,15,18,21]:
+        if hour <= local.hour < hour+2:
+            return local.replace(hour=hour,minute=0).strftime('%Y-%m-%dT%H:00')
     return None
 
 def canonical(events,source,membership,old,conferences=None):
@@ -139,16 +141,20 @@ def canonical(events,source,membership,old,conferences=None):
 
 # Provider names confirmed against the ESPN teams on the same slate.
 DISPLAY_TEAM_ALIASES = {
+    "Florida Int'l Golden Panthers": 'Florida International Panthers',
+    "Mt. St. Mary's Mountaineers": "Mount St. Mary's Mountaineers",
     'Albany Great Danes': 'UAlbany Great Danes',
     'Alcorn St Braves': 'Alcorn State Braves',
     'American Eagles': 'American University Eagles',
     'Arizona St Sun Devils': 'Arizona State Sun Devils',
     'Arkansas St Red Wolves': 'Arkansas State Red Wolves',
+    'Boston Univ. Terriers': 'Boston University Terriers',
     'CSU Northridge Matadors': 'Cal State Northridge Matadors',
     'Cal Baptist Lancers': 'California Baptist Lancers',
     'Central Connecticut St Blue Devils': 'Central Connecticut Blue Devils',
     'Chicago St Cougars': 'Chicago State Cougars',
     'Colorado St Rams': 'Colorado State Rams',
+    'Coppin St Eagles': 'Coppin State Eagles',
     'Delaware St Hornets': 'Delaware State Hornets',
     'East Tennessee St Buccaneers': 'East Tennessee State Buccaneers',
     'Florida St Seminoles': 'Florida State Seminoles',
@@ -160,13 +166,19 @@ DISPLAY_TEAM_ALIASES = {
     'Kansas St Wildcats': 'Kansas State Wildcats',
     'Kennesaw St Owls': 'Kennesaw State Owls',
     'Loyola (Chi) Ramblers': 'Loyola Chicago Ramblers',
+    'Loyola (MD) Greyhounds': 'Loyola Maryland Greyhounds',
     'Michigan St Spartans': 'Michigan State Spartans',
+    'Miss Valley St Delta Devils': 'Mississippi Valley State Delta Devils',
     'Mississippi St Bulldogs': 'Mississippi State Bulldogs',
     'N Colorado Bears': 'Northern Colorado Bears',
+    'Nicholls St Colonels': 'Nicholls Colonels',
     'North Dakota St Bison': 'North Dakota State Bison',
     'Northwestern St Demons': 'Northwestern State Demons',
+    'Oklahoma St Cowboys': 'Oklahoma State Cowboys',
     'Oregon St Beavers': 'Oregon State Beavers',
+    'South Carolina St Bulldogs': 'South Carolina State Bulldogs',
     'St. Thomas (MN) Tommies': 'St. Thomas Tommies',
+    'Texas A&M-CC Islanders': 'Texas A&M-Corpus Christi Islanders',
     'UMKC Kangaroos': 'Kansas City Roos',
     'Wright St Raiders': 'Wright State Raiders',
     'Youngstown St Penguins': 'Youngstown State Penguins',

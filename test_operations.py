@@ -12,6 +12,10 @@ class OperationsTest(unittest.TestCase):
         self.assertEqual(slot(datetime.fromisoformat('2026-11-02T03:45:00+00:00')),'2026-11-01T22:45')
         self.assertIsNone(slot(datetime.fromisoformat('2026-11-02T04:45:00+00:00')))
 
+    def test_delayed_trigger_remains_in_its_original_collection_window(self):
+        self.assertEqual(slot(datetime.fromisoformat('2026-11-06T10:37:00-05:00')),'2026-11-06T09:00')
+        self.assertIsNone(slot(datetime.fromisoformat('2026-11-06T11:00:00-05:00')))
+
     def test_changed_tbd_cancelled_and_non_d1_schedule(self):
         event={'id':'42','date':'2026-11-02T23:30:00Z','season':{'year':2027,'type':2},'competitions':[{'timeValid':False,'neutralSite':False,'status':{'type':{'name':'STATUS_POSTPONED','description':'Postponed'}},'competitors':[{'homeAway':'home','team':{'id':'1','displayName':'Home'}},{'homeAway':'away','team':{'id':'2','displayName':'Away'}}]}]}
         rows=canonical([event],{'observed_at':'2026-10-25T12:00:00Z','sha256':'new'},{'espn:1'},[{'id':'espn:42','tipoff':'2026-11-02T20:00:00Z','odds':{'stale':True}}])
