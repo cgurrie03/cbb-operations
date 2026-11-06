@@ -27,6 +27,16 @@ class OperationsTest(unittest.TestCase):
         self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),1)
         self.assertEqual(game['odds']['homeName'],'Home');self.assertTrue(game['odds']['designationReversed'])
         game['status']='STATUS_CANCELED';self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),0)
+    def test_reviewed_aliases_preserve_provider_outcome_names(self):
+        game={'home':'Ohio State Buckeyes','away':'Youngstown State Penguins','tipoff':'2026-11-06T23:30:00Z','timeValid':True,'status':'STATUS_SCHEDULED'}
+        quote={'id':'q','home_team':'Youngstown St Penguins','away_team':'Ohio State Buckeyes','commence_time':game['tipoff']}
+        cache={'collectedAt':'2026-11-06T20:00:00Z','events':[quote]}
+        self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),1)
+        self.assertEqual(game.pop('odds')['awayName'],'Youngstown St Penguins')
+        cache['events'].append(dict(quote,id='duplicate'))
+        self.assertEqual(attach_cached_odds({'upcoming':[game]},cache,lambda _:[]),0)
+        self.assertNotIn('odds',game)
+
     def test_failed_readback_never_activates_partial_publication(self):
         import operations
         with tempfile.TemporaryDirectory() as directory:

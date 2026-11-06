@@ -137,27 +137,73 @@ def canonical(events,source,membership,old,conferences=None):
         g.pop('odds',None);rows.append(g)
     return sorted(rows,key=lambda g:(g['tipoff'],g['id']))
 
+# Provider names confirmed against the ESPN teams on the same slate.
+DISPLAY_TEAM_ALIASES = {
+    'Albany Great Danes': 'UAlbany Great Danes',
+    'Alcorn St Braves': 'Alcorn State Braves',
+    'American Eagles': 'American University Eagles',
+    'Arizona St Sun Devils': 'Arizona State Sun Devils',
+    'Arkansas St Red Wolves': 'Arkansas State Red Wolves',
+    'CSU Northridge Matadors': 'Cal State Northridge Matadors',
+    'Cal Baptist Lancers': 'California Baptist Lancers',
+    'Central Connecticut St Blue Devils': 'Central Connecticut Blue Devils',
+    'Chicago St Cougars': 'Chicago State Cougars',
+    'Colorado St Rams': 'Colorado State Rams',
+    'Delaware St Hornets': 'Delaware State Hornets',
+    'East Tennessee St Buccaneers': 'East Tennessee State Buccaneers',
+    'Florida St Seminoles': 'Florida State Seminoles',
+    'Gardner-Webb Bulldogs': "Gardner-Webb Runnin' Bulldogs",
+    'Georgia St Panthers': 'Georgia State Panthers',
+    'Indiana St Sycamores': 'Indiana State Sycamores',
+    'Jackson St Tigers': 'Jackson State Tigers',
+    'Jacksonville St Gamecocks': 'Jacksonville State Gamecocks',
+    'Kansas St Wildcats': 'Kansas State Wildcats',
+    'Kennesaw St Owls': 'Kennesaw State Owls',
+    'Loyola (Chi) Ramblers': 'Loyola Chicago Ramblers',
+    'Michigan St Spartans': 'Michigan State Spartans',
+    'Mississippi St Bulldogs': 'Mississippi State Bulldogs',
+    'N Colorado Bears': 'Northern Colorado Bears',
+    'North Dakota St Bison': 'North Dakota State Bison',
+    'Northwestern St Demons': 'Northwestern State Demons',
+    'Oregon St Beavers': 'Oregon State Beavers',
+    'St. Thomas (MN) Tommies': 'St. Thomas Tommies',
+    'UMKC Kangaroos': 'Kansas City Roos',
+    'Wright St Raiders': 'Wright State Raiders',
+    'Youngstown St Penguins': 'Youngstown State Penguins',
+}
+
+
 def attach_cached_odds(data,cache,history):
     """Display matching accepts swapped neutral-site designations, never fuzzy teams.
     Timing conflicts are disclosed; forecast issuance still uses frozen matching.
     """
     import re
     norm=lambda s:re.sub('[^a-z0-9]','',s.lower())
-    matched=0
+    aliases={norm(a):norm(b) for a,b in DISPLAY_TEAM_ALIASES.items()}
+    def provider_team(name):
+        key=norm(name)
+        return aliases.get(key,key)
+
+    matches={}
     for event in (cache or {}).get('events',[]):
-        provider={norm(event['home_team']),norm(event['away_team'])}
+        provider_names={provider_team(event[side+'_team']):event[side+'_team'] for side in ('home','away')}
+        if len(provider_names)!=2:continue
         candidates=[g for g in data['upcoming'] if g['status'] not in ['STATUS_CANCELED','STATUS_CANCELLED','STATUS_POSTPONED'] and
-                    {norm(g['home']),norm(g['away'])}==provider and
+                    {norm(g['home']),norm(g['away'])}==provider_names.keys() and
                     abs((datetime.fromisoformat(g['tipoff'].replace('Z','+00:00'))-datetime.fromisoformat(event['commence_time'].replace('Z','+00:00'))).total_seconds())<=129600]
         if len(candidates)==1:
             g=candidates[0]
-            delta=abs((datetime.fromisoformat(g['tipoff'].replace('Z','+00:00'))-datetime.fromisoformat(event['commence_time'].replace('Z','+00:00'))).total_seconds())
-            g['odds']=dict(eventId=event['id'],collectedAt=cache['collectedAt'],bookmakers=event.get('bookmakers',[]),
-                homeName=next(n for n in [event['home_team'],event['away_team']] if norm(n)==norm(g['home'])),
-                awayName=next(n for n in [event['home_team'],event['away_team']] if norm(n)==norm(g['away'])),
-                providerTipoff=event['commence_time'],timingStatus='unconfirmed' if not g['timeValid'] else 'conflict' if delta>300 else 'aligned',
-                designationReversed=norm(g['home'])!=norm(event['home_team']),history=history(event['id']))
-            matched+=1
+            matches.setdefault(id(g),[]).append((g,event,provider_names))
+    matched=0
+    for group in matches.values():
+        if len(group)!=1:continue
+        g,event,provider_names=group[0]
+        delta=abs((datetime.fromisoformat(g['tipoff'].replace('Z','+00:00'))-datetime.fromisoformat(event['commence_time'].replace('Z','+00:00'))).total_seconds())
+        g['odds']=dict(eventId=event['id'],collectedAt=cache['collectedAt'],bookmakers=event.get('bookmakers',[]),
+            homeName=provider_names[norm(g['home'])],awayName=provider_names[norm(g['away'])],
+            providerTipoff=event['commence_time'],timingStatus='unconfirmed' if not g['timeValid'] else 'conflict' if delta>300 else 'aligned',
+            designationReversed=provider_team(event['home_team'])!=norm(g['home']),history=history(event['id']))
+        matched+=1
     return matched
 
 
@@ -189,7 +235,7 @@ def run(public_only=False,scheduled=False):
     if scheduled and (not current_slot or previous.get('lastCompletedSlot')==current_slot):
         print('No due slot; duplicate or daylight-saving alternate skipped');return
     health={**previous,'lastAttemptAt':stamp(),'status':'running','hosting':'GitHub Actions','cadence':'09:00, 12:00, 15:00, 18:00, 21:00 Eastern',
-            'openingNightCheck':'2026-11-01T22:45:00-05:00','slot':current_slot,'errorStage':None}
+            'openingNightCheck':'2026-11-01T22:45:00-05:00','slot':current_slot,'errorStage':None,'errorType':None}
     dump(RUNTIME/'work/operations-health.json',health);checkpoint()
     stage='schedule'
     failed=False
@@ -308,7 +354,8 @@ def run(public_only=False,scheduled=False):
         health['quota']={'remainingCredits':ledger.get('remaining'),'attemptsToday':sum(c['day']==today.isoformat() for c in ledger['calls']),
             'rolling31DayCredits':sum(c.get('credits',3) for c in ledger['calls'] if datetime.fromisoformat(c['at'])>now()-timedelta(days=31)),
             'maximumAttemptsPerDay':5,'maximumRollingCredits':500,'lastOutcome':result['status']}
-        health['lastSuccessAt']=stamp();health['lastCompletedSlot']=current_slot;health['status']='degraded' if failed else 'success'
+        health['lastSuccessAt']=stamp();health['status']='degraded' if failed else 'success'
+        if not public_only:health['lastCompletedSlot']=current_slot
     except Exception as error:
         import traceback
         frames=traceback.extract_tb(error.__traceback__)
