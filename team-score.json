@@ -1,0 +1,557 @@
+{
+  "version": "team-score-v1-20261106",
+  "fitThrough": 2026,
+  "selected": {
+    "margin": "recent"
+  },
+  "specs": {
+    "recent": {
+      "method": "recent",
+      "scores": {
+        "weights": [
+          [
+            0.5182972075639495,
+            0.15904539884528435,
+            -0.09273420413782324,
+            0.4318112349363998,
+            0.19330097303782043,
+            0.19778560049260793,
+            0.019365967686266732,
+            0.3165713309442994,
+            -0.08088839837117967,
+            0.5986686978881353
+          ],
+          [
+            -0.5169135883134928,
+            -0.012854056888156178,
+            0.08727619179628399,
+            0.42890414781898084,
+            0.193111419810849,
+            -0.01803522879947315,
+            0.22788002751798428,
+            -0.2312428998294711,
+            -0.1525042109454417,
+            0.7322265641965624
+          ]
+        ],
+        "intercept": [
+          -3.3323653374897475,
+          -2.7129763237178963
+        ]
+      }
+    }
+  },
+  "folds": [
+    {
+      "season": 2023,
+      "direct": {
+        "games": 5715,
+        "mae": [
+          9.033109309424951,
+          13.102328763992432
+        ],
+        "novemberGames": 1192,
+        "novemberMAE": [
+          9.684702398513133,
+          13.672557185291005
+        ],
+        "tailGames": 95,
+        "tailFavoriteBias": -1.8062355107181791,
+        "novemberTotalBias": -1.30949807329736,
+        "marginResidualBand": [
+          -14.137364268989547,
+          14.561546516242673
+        ]
+      },
+      "possession": {
+        "games": 5715,
+        "mae": [
+          9.034584826932456,
+          13.096748891468758
+        ],
+        "novemberGames": 1192,
+        "novemberMAE": [
+          9.69089719132511,
+          13.672095001082864
+        ],
+        "tailGames": 95,
+        "tailFavoriteBias": -1.552059723366348,
+        "novemberTotalBias": -1.3420626240142424,
+        "marginResidualBand": [
+          -14.072880901111061,
+          14.52022493699281
+        ]
+      },
+      "recent": {
+        "games": 5715,
+        "mae": [
+          9.026172452502642,
+          13.087629338560662
+        ],
+        "novemberGames": 1192,
+        "novemberMAE": [
+          9.666514559181289,
+          13.651274261805204
+        ],
+        "tailGames": 95,
+        "tailFavoriteBias": -1.6091003066205998,
+        "novemberTotalBias": -0.7983819646705256,
+        "marginResidualBand": [
+          -13.811094268077909,
+          14.759786513031496
+        ]
+      },
+      "robust": {
+        "games": 5715,
+        "mae": [
+          9.04998580709723,
+          13.118316341223878
+        ],
+        "novemberGames": 1192,
+        "novemberMAE": [
+          9.714948187547979,
+          13.635686556676726
+        ],
+        "tailGames": 95,
+        "tailFavoriteBias": 2.4637741104484596,
+        "novemberTotalBias": -0.7728238386825368,
+        "marginResidualBand": [
+          -14.009440505289085,
+          14.686167480045242
+        ]
+      },
+      "rolling": {
+        "games": 5715,
+        "mae": [
+          9.04998580709723,
+          13.056957819569503
+        ],
+        "novemberGames": 1192,
+        "novemberMAE": [
+          9.714948187547979,
+          13.657862108589105
+        ],
+        "tailGames": 95,
+        "tailFavoriteBias": 2.4637741104484596,
+        "novemberTotalBias": -0.5389019545845254,
+        "marginResidualBand": [
+          -14.009440505289085,
+          14.686167480045242
+        ]
+      },
+      "control": {
+        "games": 5715,
+        "mae": [
+          9.04998580709723,
+          13.087525762172671
+        ],
+        "novemberGames": 1192,
+        "novemberMAE": [
+          9.714948187547979,
+          13.661678022947285
+        ],
+        "tailGames": 95,
+        "tailFavoriteBias": 2.4637741104484596,
+        "novemberTotalBias": -0.8772484419015039,
+        "marginResidualBand": [
+          -14.009440505289085,
+          14.686167480045242
+        ]
+      }
+    },
+    {
+      "season": 2024,
+      "direct": {
+        "games": 5726,
+        "mae": [
+          9.07497524006116,
+          13.171435946607394
+        ],
+        "novemberGames": 1142,
+        "novemberMAE": [
+          9.605605718366315,
+          13.379636603774367
+        ],
+        "tailGames": 93,
+        "tailFavoriteBias": -0.6942673576806497,
+        "novemberTotalBias": 1.5883817171557693,
+        "marginResidualBand": [
+          -14.793395539185681,
+          14.349175941135158
+        ]
+      },
+      "possession": {
+        "games": 5726,
+        "mae": [
+          9.081251944030527,
+          13.166994228737511
+        ],
+        "novemberGames": 1142,
+        "novemberMAE": [
+          9.590178593830794,
+          13.378520289511808
+        ],
+        "tailGames": 93,
+        "tailFavoriteBias": -0.5408170929173185,
+        "novemberTotalBias": 1.5531220033693487,
+        "marginResidualBand": [
+          -14.830660268736906,
+          14.382633352660697
+        ]
+      },
+      "recent": {
+        "games": 5726,
+        "mae": [
+          9.072913241529582,
+          13.175555510385772
+        ],
+        "novemberGames": 1142,
+        "novemberMAE": [
+          9.589095539621704,
+          13.43007582332883
+        ],
+        "tailGames": 93,
+        "tailFavoriteBias": -0.22805661909076827,
+        "novemberTotalBias": 2.1806968238098796,
+        "marginResidualBand": [
+          -14.607806991406711,
+          14.574555400647426
+        ]
+      },
+      "robust": {
+        "games": 5726,
+        "mae": [
+          9.122097402791082,
+          13.184896677693006
+        ],
+        "novemberGames": 1142,
+        "novemberMAE": [
+          9.754354572712002,
+          13.408121376672703
+        ],
+        "tailGames": 93,
+        "tailFavoriteBias": 3.51926732548416,
+        "novemberTotalBias": 2.154723026282555,
+        "marginResidualBand": [
+          -14.8708077335221,
+          14.567929696625498
+        ]
+      },
+      "rolling": {
+        "games": 5726,
+        "mae": [
+          9.122097402791082,
+          13.185747639410884
+        ],
+        "novemberGames": 1142,
+        "novemberMAE": [
+          9.754354572712002,
+          13.434537511223992
+        ],
+        "tailGames": 93,
+        "tailFavoriteBias": 3.51926732548416,
+        "novemberTotalBias": 0.6741498386288864,
+        "marginResidualBand": [
+          -14.8708077335221,
+          14.567929696625498
+        ]
+      },
+      "control": {
+        "games": 5726,
+        "mae": [
+          9.122097402791082,
+          13.167615823685344
+        ],
+        "novemberGames": 1142,
+        "novemberMAE": [
+          9.754354572712002,
+          13.429883346187072
+        ],
+        "tailGames": 93,
+        "tailFavoriteBias": 3.51926732548416,
+        "novemberTotalBias": 1.720531827480777,
+        "marginResidualBand": [
+          -14.8708077335221,
+          14.567929696625498
+        ]
+      }
+    },
+    {
+      "season": 2025,
+      "direct": {
+        "games": 5764,
+        "mae": [
+          9.060075404829819,
+          13.002282834311881
+        ],
+        "novemberGames": 1233,
+        "novemberMAE": [
+          9.91187952625937,
+          13.561241190149117
+        ],
+        "tailGames": 131,
+        "tailFavoriteBias": 0.4907517105613291,
+        "novemberTotalBias": 1.1387325850931183,
+        "marginResidualBand": [
+          -14.18542801403139,
+          14.836814217235869
+        ]
+      },
+      "possession": {
+        "games": 5764,
+        "mae": [
+          9.059783451639513,
+          12.999915711893472
+        ],
+        "novemberGames": 1233,
+        "novemberMAE": [
+          9.913312192347234,
+          13.55831521196372
+        ],
+        "tailGames": 131,
+        "tailFavoriteBias": 0.737223720512964,
+        "novemberTotalBias": 1.1065939569541032,
+        "marginResidualBand": [
+          -14.188095379768754,
+          14.806592772503235
+        ]
+      },
+      "recent": {
+        "games": 5764,
+        "mae": [
+          9.05584077106764,
+          13.001687295185178
+        ],
+        "novemberGames": 1233,
+        "novemberMAE": [
+          9.896661694016153,
+          13.584595455029396
+        ],
+        "tailGames": 131,
+        "tailFavoriteBias": 0.801081967387714,
+        "novemberTotalBias": 1.2812272703856582,
+        "marginResidualBand": [
+          -13.996052081875696,
+          14.892462500447136
+        ]
+      },
+      "robust": {
+        "games": 5764,
+        "mae": [
+          9.094791607216473,
+          13.022303315043583
+        ],
+        "novemberGames": 1233,
+        "novemberMAE": [
+          10.006557601691641,
+          13.596070260431553
+        ],
+        "tailGames": 131,
+        "tailFavoriteBias": 4.879064843845019,
+        "novemberTotalBias": 1.6463727024521628,
+        "marginResidualBand": [
+          -14.006898501366297,
+          14.857574339762282
+        ]
+      },
+      "rolling": {
+        "games": 5764,
+        "mae": [
+          9.094791607216473,
+          13.006608010869206
+        ],
+        "novemberGames": 1233,
+        "novemberMAE": [
+          10.006557601691641,
+          13.581447440456646
+        ],
+        "tailGames": 131,
+        "tailFavoriteBias": 4.879064843845019,
+        "novemberTotalBias": -0.12739495506787366,
+        "marginResidualBand": [
+          -14.006898501366297,
+          14.857574339762282
+        ]
+      },
+      "control": {
+        "games": 5764,
+        "mae": [
+          9.094791607216473,
+          13.01139587823359
+        ],
+        "novemberGames": 1233,
+        "novemberMAE": [
+          10.006557601691641,
+          13.575324246310982
+        ],
+        "tailGames": 131,
+        "tailFavoriteBias": 4.879064843845019,
+        "novemberTotalBias": 1.2022167360004832,
+        "marginResidualBand": [
+          -14.006898501366297,
+          14.857574339762282
+        ]
+      }
+    },
+    {
+      "season": 2026,
+      "direct": {
+        "games": 5752,
+        "mae": [
+          9.216577386796889,
+          13.781605225203807
+        ],
+        "novemberGames": 1245,
+        "novemberMAE": [
+          10.099107602149124,
+          14.455601606043103
+        ],
+        "tailGames": 170,
+        "tailFavoriteBias": 0.05953340852604896,
+        "novemberTotalBias": 3.169740700097568,
+        "marginResidualBand": [
+          -14.785511018833212,
+          14.223767878825386
+        ]
+      },
+      "possession": {
+        "games": 5752,
+        "mae": [
+          9.222680924082521,
+          13.781160966925144
+        ],
+        "novemberGames": 1245,
+        "novemberMAE": [
+          10.102319170321078,
+          14.4430308554544
+        ],
+        "tailGames": 170,
+        "tailFavoriteBias": 0.046353154862410074,
+        "novemberTotalBias": 3.1029997195842793,
+        "marginResidualBand": [
+          -14.726711783732394,
+          14.180240770928465
+        ]
+      },
+      "recent": {
+        "games": 5752,
+        "mae": [
+          9.21253853772088,
+          13.781751083804886
+        ],
+        "novemberGames": 1245,
+        "novemberMAE": [
+          10.107231959392076,
+          14.42563406654557
+        ],
+        "tailGames": 170,
+        "tailFavoriteBias": 0.08422641970351145,
+        "novemberTotalBias": 3.0195624399568755,
+        "marginResidualBand": [
+          -14.71737221745727,
+          14.255062980264377
+        ]
+      },
+      "robust": {
+        "games": 5752,
+        "mae": [
+          9.266426124046282,
+          13.784016276530508
+        ],
+        "novemberGames": 1245,
+        "novemberMAE": [
+          10.216055811569165,
+          14.49820740155178
+        ],
+        "tailGames": 170,
+        "tailFavoriteBias": 4.304135373481877,
+        "novemberTotalBias": 3.6608864382357216,
+        "marginResidualBand": [
+          -14.753031600476547,
+          14.456955321114174
+        ]
+      },
+      "rolling": {
+        "games": 5752,
+        "mae": [
+          9.266426124046282,
+          13.784509767293548
+        ],
+        "novemberGames": 1245,
+        "novemberMAE": [
+          10.216055811569165,
+          14.479292304760756
+        ],
+        "tailGames": 170,
+        "tailFavoriteBias": 4.304135373481877,
+        "novemberTotalBias": 0.38234195027942747,
+        "marginResidualBand": [
+          -14.753031600476547,
+          14.456955321114174
+        ]
+      },
+      "control": {
+        "games": 5752,
+        "mae": [
+          9.266426124046282,
+          13.766164872992725
+        ],
+        "novemberGames": 1245,
+        "novemberMAE": [
+          10.216055811569165,
+          14.46987764904663
+        ],
+        "tailGames": 170,
+        "tailFavoriteBias": 4.304135373481877,
+        "novemberTotalBias": 3.3254370375859503,
+        "marginResidualBand": [
+          -14.753031600476547,
+          14.456955321114174
+        ]
+      }
+    }
+  ],
+  "pooled": {
+    "direct": {
+      "marginMAE": 9.096291139532545,
+      "totalMAE": 13.264642707184592,
+      "novemberMarginMAE": 9.831359810880185,
+      "novemberTotalMAE": 13.777112957887516
+    },
+    "possession": {
+      "marginMAE": 9.099679984667446,
+      "totalMAE": 13.261440123430864,
+      "novemberMarginMAE": 9.83043115262431,
+      "novemberTotalMAE": 13.772731397195605
+    },
+    "recent": {
+      "marginMAE": 9.091974764144068,
+      "totalMAE": 13.261897910259886,
+      "novemberMarginMAE": 9.821138844338554,
+      "novemberTotalMAE": 13.782042003161639
+    },
+    "rolling": {
+      "marginMAE": 9.133452128128779,
+      "totalMAE": 13.258731266203293,
+      "novemberMarginMAE": 9.92867127387442,
+      "novemberTotalMAE": 13.797809036734453
+    },
+    "robust": {
+      "marginMAE": 9.133452128128779,
+      "totalMAE": 13.277610933357117,
+      "novemberMarginMAE": 9.92867127387442,
+      "novemberTotalMAE": 13.7946874135002
+    },
+    "control": {
+      "marginMAE": 9.133452128128779,
+      "totalMAE": 13.258424189956514,
+      "novemberMarginMAE": 9.92867127387442,
+      "novemberTotalMAE": 13.79364494045372
+    }
+  },
+  "games": 22957,
+  "marginResidualBand": [
+    -14.333412161264018,
+    14.63938486225383
+  ]
+}

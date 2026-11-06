@@ -18,6 +18,12 @@ export function prepareBoard(data,preseason,paper,at=Date.now()){
   if(!cancelled(g)&&comparison&&comparison.version===data.modelComparison?.version&&comparison.homeTeamId===g.homeTeamId&&comparison.awayTeamId===g.awayTeamId&&sameTip(comparison.tipoff)&&time(comparison.observedAt)<time(g.tipoff)&&['margin','total','homeWinProbability'].every(k=>Number.isFinite(comparison.ensemble?.[k]))){
    g.modelComparison=comparison;g.ensembleProjection=comparison.ensemble;g.modelMargin=comparison.ensemble.margin;g.expectedTotal=comparison.ensemble.total;g.modelState='Three-model average';
   }else{g.modelComparison=null;delete g.ensembleProjection}
+  const updated=g.modelComparison?.teamScore, spec=data.teamScoreModel;
+  if(updated&&spec?.version===updated.version){
+   g.teamScore=updated;g.teamScoreModel=spec;
+   if(spec.selected?.margin&&Number.isFinite(updated.margin))g.modelMargin=updated.margin;
+   if(spec.selected?.total&&Number.isFinite(updated.total))g.expectedTotal=updated.total;
+  }
   return g;
  });
 }
